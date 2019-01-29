@@ -15,8 +15,8 @@ void setup() {
 
   //Activate WiFi network
   Serial.print("Setting up AP. . .");
-  Wifi.softAP(ssid, password);
-    //We can remove the passwor parameter if we want the network to be open
+  WiFi.softAP(ssid, password);
+    //We can remove the password parameter if we want the network to be open
   IPAddress IP = WiFi.softAPIP();
   Serial.print("IP address: ");
   Serial.println(IP);
@@ -25,6 +25,15 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  WiFiClient client = server.available();     //Listen for devices
 
+  if(client){
+    Serial.println("Connected.");
+    while(client.connected()){
+      //Send audio data to the client
+    }
+    //Close the connection
+    client.stop();
+    Serial.println("Disconnected.");
+  }
 }
