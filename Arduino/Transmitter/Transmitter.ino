@@ -8,7 +8,7 @@ SPISettings adcSettings(705600, MSBFIRST, SPI_MODE0);
   //These values are rough educated guesses, will adjust once we have the hardware
 
 //Network credentials
-const char* ssid = "In-Ear Transmitter";
+const char* ssid = "In-Ear-Transmitter";
 const char* password = "123456789";
 
 //Set server port number to 80
@@ -38,23 +38,28 @@ void setup() {
 
 void loop() {
   WiFiClient client = server.available();     //Listen for devices
-  uint8_t audio;
+  uint16_t audio;
 
   if(client){
     Serial.println("Connected.");
     while(client.connected()){
-      SPI.beginTransaction(adcSettings);
-      //Enable the ADC
-      digitalWrite(SS, LOW);
-      //stores the received data in variable "audio"
-      //The data sent doesn't matter, as we are reading only
-      audio = SPI.transfer16(0);
-      digitalWrite(SS, HIGH);
-      SPI.endTransaction();
+      audio = adc_read();
       client.write(audio);    //This likely won't be the way it actually works
     }
     //Close the connection
     client.stop();
     Serial.println("Disconnected.");
   }
+}
+
+uint16_t adc_read(){
+  SPI.beginTransaction(adcSettings);
+  //Enable the ADC
+  digitalWrite(SS, LOW);
+  //stores the received data in variable "audio"
+  //The data sent doesn't matter, as we are reading only
+  uint16_t audio = SPI.transfer16(0);
+  digitalWrite(SS, HIGH);
+  SPI.endTransaction();
+  return audio;
 }
