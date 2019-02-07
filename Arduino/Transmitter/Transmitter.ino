@@ -38,10 +38,10 @@ void setup() {
 
 void loop() {
   WiFiClient client = server.available();     //Listen for devices
-  uint16_t audio;
 
   if(client){
     Serial.println("Connected.");
+    uint16_t audio;
     while(client.connected()){
       audio = adc_read();
       client.write(audio);    //This likely won't be the way it actually works
@@ -59,7 +59,7 @@ uint16_t adc_read(){
   //stores the received data in variable "audio"
   //The data sent doesn't matter, as we are reading only
   uint16_t audio = SPI.transfer16(0);
-  digitalWrite(SS, HIGH);
-  SPI.endTransaction();
+  //digitalWrite(SS, HIGH);
+  //SPI.endTransaction();
   return audio;
 }
