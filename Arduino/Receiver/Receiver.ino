@@ -24,7 +24,7 @@ const int WiFiConnected = 18;
 int i2s_num = 0; // i2s port number
 i2s_config_t i2s_config = {
   .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
-  .sample_rate = 16000,
+  .sample_rate = 44100,
   .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
   .channel_format = I2S_CHANNEL_FMT_ONLY_RIGHT,
   .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S),
@@ -71,18 +71,20 @@ void loop() {
     delay(1000);
     return;
   }
-  digitalWrite(WiFiConnected, HIGH);      //enables the connection indicator
-  //Reads a byte sent from the transmitter and stores it in the variable "audio"
-  uint16_t audio = client.read();
-  //A pointer to the mem location of audio
-  //const void* ptr = &audio;
-  //Length of the audio data sample
-  //size_t audio_size = 16;
-  //Stores the audio data in at the end of the ring buffer
-  //xRingbufferSend(buf, ptr, audio_size, 1);
-  //In this section, something will need to happen with timing, but I'm not sure what yet
-  //Receive audio data from the beginning of the ring buffer
-  //uint16_t *item = (uint16_t *)xRingbufferReceive(buf, &audio_size, 1);
-  i2s_write(I2S_NUM_0, &audio, len, &len, 1);
+  while(client.connected()){
+    digitalWrite(WiFiConnected, HIGH);      //enables the connection indicator
+    //Reads a byte sent from the transmitter and stores it in the variable "audio"
+    uint16_t audio = client.read();
+    //A pointer to the mem location of audio
+    //const void* ptr = &audio;
+    //Length of the audio data sample
+    //size_t audio_size = 16;
+    //Stores the audio data in at the end of the ring buffer
+    //xRingbufferSend(buf, ptr, audio_size, 1);
+    //In this section, something will need to happen with timing, but I'm not sure what yet
+    //Receive audio data from the beginning of the ring buffer
+    //uint16_t *item = (uint16_t *)xRingbufferReceive(buf, &audio_size, 1);
+    i2s_write(I2S_NUM_0, &audio, len, &len, 1);
+  }
 
 }
