@@ -72,19 +72,9 @@ void loop() {
     return;
   }
   while(client.connected()){
-    digitalWrite(WiFiConnected, HIGH);      //enables the connection indicator
-    //Reads a byte sent from the transmitter and stores it in the variable "audio"
-    uint16_t audio = client.read();
-    //A pointer to the mem location of audio
-    //const void* ptr = &audio;
-    //Length of the audio data sample
-    //size_t audio_size = 16;
-    //Stores the audio data in at the end of the ring buffer
-    //xRingbufferSend(buf, ptr, audio_size, 1);
-    //In this section, something will need to happen with timing, but I'm not sure what yet
-    //Receive audio data from the beginning of the ring buffer
-    //uint16_t *item = (uint16_t *)xRingbufferReceive(buf, &audio_size, 1);
-    i2s_write(I2S_NUM_0, &audio, len, &len, 1);
+    if(client.read() == 'a'){
+      client.write('a');
+    }
   }
 
 }
