@@ -42,12 +42,21 @@ void loop() {
   if(client){
     unsigned long time1, time2, diff;
     Serial.println("Connected.");
+    int x = 0;
+    time1 = millis();
+    client.write(x);
     while(client.connected()){
-      time1 = millis();
-      client.write('a');    //This likely won't be the way it actually works
-      if(client.read() == 'a'){
+      if(client.read() == x+1){
         time2 = millis();
+        x++;
+        if(x == 255)
+          x = 0;
         diff = time2-time1;
+        Serial.println(diff);
+        //Serial.println(x);
+        //delay(10);
+        time1 = millis();
+        client.write(x);
       }
     }
     //Close the connection

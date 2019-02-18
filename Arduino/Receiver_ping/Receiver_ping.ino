@@ -71,9 +71,13 @@ void loop() {
     delay(1000);
     return;
   }
+  int x = 0;
   while(client.connected()){
-    if(client.read() == 'a'){
-      client.write('a');
+    if(client.read() == x){
+      x++;
+      client.write(x);
+      if(x == 255)
+        x = 0;
     }
   }
 
