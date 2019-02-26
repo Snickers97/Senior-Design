@@ -40,25 +40,15 @@ void loop() {
   WiFiClient client = server.available();     //Listen for devices
 
   if(client){
-    unsigned long time1, time2, diff;
     Serial.println("Connected.");
-    int x = 0;
     client.setTimeout(20);
-    time1 = millis();
-    client.write(x);
+    int x = 0;
     while(client.connected()){
-      if(client.read() == x+1){
-        time2 = millis();
-        x++;
-        if(x == 255)
-          x = 0;
-        diff = time2-time1;
-        Serial.println(diff);
-        //Serial.println(x);
-        //delay(10);
-        time1 = millis();
-        client.write(x);
-      }
+      client.write(x);
+      delay(10);
+      x++;
+      if(x == 255)
+        x = 0;
     }
     //Close the connection
     client.stop();

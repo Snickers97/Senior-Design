@@ -73,12 +73,19 @@ void loop() {
   }
   client.setTimeout(20);
   int x = 0;
+  unsigned long time1, time2, diff;
+  time1 = millis();
   while(client.connected()){
     if(client.read() == x){
+      time2 = millis();
+      diff = time2 - time1;
+      Serial.println(diff);
       x++;
-      client.write(x);
-      if(x == 255)
+      Serial.println(x);
+      if(x == 255){
         x = 0;
+      }
+      time1 = millis();
     }
   }
 
