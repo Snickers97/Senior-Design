@@ -1,11 +1,7 @@
 //Code for the In Ear Monitor transmitter
 
 #include <WiFi.h>
-#include <SPI.h>
-
-//Sets the SPI settings for reading from the ADC
-SPISettings adcSettings(705600, MSBFIRST, SPI_MODE0);
-  //These values are rough educated guesses, will adjust once we have the hardware
+#include "SoundData.h"
 
 //Network credentials
 const char* ssid = "In-Ear-Transmitter";
@@ -29,12 +25,6 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(IP);
   server.begin();
-
-  //SPI SETUP SECTION
-  pinMode(SS, OUTPUT);
-  //Ensures the ADC starts disabled (high signal disables devices)
-  digitalWrite(SS, HIGH);
-  SPI.begin();
   
   
 }
@@ -44,25 +34,19 @@ void loop() {
 
   if(client){
     Serial.println("Connected.");
-    uint16_t audio;
+    client.setTimeout(20);
+    //uint8_t audio[256];
     while(client.connected()){
-      audio = adc_read();
-      client.write(audio);    //This likely won't be the way it actually works
+      for(int i = 0; i < 40923; i++){
+        /*for(int j = 0; j < 256; j++){
+          audio[j] = Force[i+j];
+        }*/
+        client.write(Force[i]);
+      }
+      delay(1000);
     }
     //Close the connection
     client.stop();
     Serial.println("Disconnected.");
   }
-}
-
-uint16_t adc_read(){
-  SPI.beginTransaction(adcSettings);
-  //Enable the ADC
-  digitalWrite(SS, LOW);
-  //stores the received data in variable "audio"
-  //The data sent doesn't matter, as we are reading only
-  uint16_t audio = SPI.transfer16(0);
-  //digitalWrite(SS, HIGH);
-  //SPI.endTransaction();
-  return audio;
 }

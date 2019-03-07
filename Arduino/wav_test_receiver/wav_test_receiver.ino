@@ -2,7 +2,6 @@
 
 #include <WiFi.h>
 #include "driver/i2s.h"
-#include "freertos/ringbuf.h"
 
 //The ssid and password set on the transmitter
 const char* ssid = "In-Ear-Transmitter";
@@ -17,20 +16,20 @@ const int sysOn = 13;           //Onboard LED
 const int WiFiOn = 15;          //Red LED
 const int WiFiConnected = 32;   //Yellow LED
   
-//The buffer audio data will be stored in
-//RingbufHandle_t buf = xRingbufferCreate(1024, RINGBUF_TYPE_NOSPLIT);
 
 //i2s configuration
-int i2s_num = 0; // i2s port number
+static const int i2s_num = 0; // i2s port number
 i2s_config_t i2s_config = {
   .mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
-  .sample_rate = 44100,
+  .sample_rate = 8000,
   .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
-  .channel_format = I2S_CHANNEL_FMT_ONLY_LEFT,
-  .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S),
+  .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+  .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
   .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // high interrupt priority
   .dma_buf_count = 128, //number of buffers
-  .dma_buf_len = 16   //size of each buffer
+  .dma_buf_len = 16,   //size of each buffer
+  .use_apll = false,
+  .tx_desc_auto_clear = false
 };
 
 i2s_pin_config_t pin_config = {
@@ -51,6 +50,8 @@ void setup() {
   digitalWrite(sysOn, HIGH);    //enables "system on" power indicator
   digitalWrite(WiFiOn, LOW);   //ensures wifi indicator is off initially
   digitalWrite(WiFiConnected, LOW);   //ensures the connection indicator is off initially
+  i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+  i2s_set_pin(I2S_NUM_0, &pin_config);
   Serial.begin(115200);
   //Initializes wifi with the settings we want to use
   WiFi.begin(ssid, password);
@@ -74,20 +75,22 @@ void loop() {
     delay(1000);
     return;
   }
+  client.setTimeout(20);
   while(client.connected()){
     digitalWrite(WiFiConnected, HIGH);      //enables the connection indicator
-    //Reads a byte sent from the transmitter and stores it in the variable "audio"
-    uint16_t audio = client.read();
-    //A pointer to the mem location of audio
-    //const void* ptr = &audio;
-    //Length of the audio data sample
-    //size_t audio_size = 16;
-    //Stores the audio data in at the end of the ring buffer
-    //xRingbufferSend(buf, ptr, audio_size, 1);
-    //In this section, something will need to happen with timing, but I'm not sure what yet
-    //Receive audio data from the beginning of the ring buffer
-    //uint16_t *item = (uint16_t *)xRingbufferReceive(buf, &audio_size, 1);
-    //i2s_write(I2S_NUM_0, &audio, len, &len, 1);
+    uint8_t audio[40923];
+    for(int i = 0; i < 100; i++){
+      /*for(int j = 0; j < 256; j++){
+        audio[j] = client.read();
+      }*/
+      audio[i] = client.read();
+    }
+    void *src;
+    for(int i = 0; i < 100; i++){
+     src = &audio[i];
+      i2s_write(I2S_NUM_0, src, len, &len, 100);
+    }
+    delay(1000);
   }
   client.stop();
   if(WiFi.status() == WL_CONNECTION_LOST){
