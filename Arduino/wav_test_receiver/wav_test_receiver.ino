@@ -26,8 +26,8 @@ i2s_config_t i2s_config = {
   .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
   .communication_format = (i2s_comm_format_t)(I2S_COMM_FORMAT_I2S | I2S_COMM_FORMAT_I2S_MSB),
   .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1, // high interrupt priority
-  .dma_buf_count = 128, //number of buffers
-  .dma_buf_len = 16,   //size of each buffer
+  .dma_buf_count = 8, //number of buffers
+  .dma_buf_len = 8,   //size of each buffer
   .use_apll = false,
   .tx_desc_auto_clear = false
 };
@@ -78,18 +78,67 @@ void loop() {
   client.setTimeout(20);
   while(client.connected()){
     digitalWrite(WiFiConnected, HIGH);      //enables the connection indicator
-    uint8_t audio[40923];
-    for(int i = 0; i < 100; i++){
-      /*for(int j = 0; j < 256; j++){
-        audio[j] = client.read();
-      }*/
-      audio[i] = client.read();
-    }
+    uint8_t audio;
     void *src;
-    for(int i = 0; i < 100; i++){
-     src = &audio[i];
-      i2s_write(I2S_NUM_0, src, len, &len, 100);
+    src = &audio;
+    for(int i = 0; i< 40923; i++){
+      audio = client.read();
+      if(audio != 255){       //Check to make sure data was received, 255 (-1) means invalid data
+        i2s_write(I2S_NUM_0, src, len, &len, 100);
+      }
     }
+    //int count = 0; 
+    //int i = 0;
+    /*while(i < 40923){
+      uint8_t audio[16] = {0x80};
+      uint8_t test[8] = {0x80};
+      count = client.readBytesUntil(255,test,8);
+      for(int j = 0; j<count;j++){
+        audio[j*2] = test[j];
+        src = &audio[j*2];
+        i2s_write(I2S_NUM_0, src, len, &len, 100);
+      }
+      i+=count;
+    }*/
+    /*uint8_t j,k;
+    j = 0;
+    k = 0;
+    for(int i = 0; i < 128; i++){
+      audio[j] = client.read();
+      while(audio[j] == 255){
+        audio[j] = client.read();
+      }
+      j+=2;
+    }
+    for(int i = 128; i < 40923; i++){
+      src = &audio[k];
+      i2s_write(I2S_NUM_0, src, len, &len, 100); 
+      audio[j] = client.read();
+      if(audio[j] == 255){
+        audio[j] = 0x80;
+      }
+      j+=2;
+      k+=2;
+    }*/
+    /*for(int i = 0; i < 40923; i++){
+      if(i<128){
+        audio[j] = client.read();
+        while(audio[j] == 255){
+          audio[j] = client.read();
+        }
+        j+=2;
+      }
+      else{
+        src = &audio[k];
+        i2s_write(I2S_NUM_0, src, len, &len, 100); 
+        audio[j] = client.read();
+        if(audio[j] == 255){
+          audio[j] = 0x80;
+        }
+        j+=2;
+        k+=2;
+      }
+    }*/
     delay(1000);
   }
   client.stop();

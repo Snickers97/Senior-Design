@@ -7,12 +7,16 @@
 const char* ssid = "In-Ear-Transmitter";
 const char* password = "123456789";
 
+//Buffer size for transmission
+int bufsize = 256;
+
 //Set server port number to 80
 WiFiServer server(80);
 
 void setup() {
   //Activate red LED
   pinMode(13, OUTPUT);
+  pinMode(26, OUTPUT);    //LED for latency testing
   digitalWrite(13, HIGH);
   Serial.begin(115200);
  
@@ -35,14 +39,19 @@ void loop() {
   if(client){
     Serial.println("Connected.");
     client.setTimeout(20);
-    //uint8_t audio[256];
     while(client.connected()){
-      for(int i = 0; i < 40923; i++){
-        /*for(int j = 0; j < 256; j++){
+      digitalWrite(26, HIGH);
+      for(int i = 0; i < 40923; i+=bufsize){
+        uint8_t audio[bufsize] = {0x80};
+        for(int j = 0; j < bufsize; j++){
+          if(i+j >= 40923){
+            break;
+          }
           audio[j] = Force[i+j];
-        }*/
-        client.write(Force[i]);
+        }
+        client.write(audio,bufsize);
       }
+      digitalWrite(26, LOW);
       delay(1000);
     }
     //Close the connection

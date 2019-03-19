@@ -54,7 +54,11 @@ void setup() {
 void loop() {
   for(int i = 0; i < 40923; i++){
     uint8_t audio = Force[i];
+    uint8_t test = 0x80;
     i2s_write(I2S_NUM_0, &audio, len, &len, 100);
+    if(random(2)==1){
+      i2s_write(I2S_NUM_0, &audio, len, &len, 100);
+    }
   }
   delay(1000);
 
