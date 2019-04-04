@@ -44,7 +44,7 @@ void loop() {
 //      digitalWrite(26, HIGH);
       uint16_t val = 0xFF00;
       uint8_t audio;
-      audio = (val >> 4);
+      audio = (val >> 8);
       /*for(int i = 0; i < bufsize; i++){
         val = adc1_get_raw(ADC1_CHANNEL_0); //read in from ADC
         audio[i] = (val >> 4);
