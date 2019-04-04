@@ -1,14 +1,14 @@
 //Code for the In Ear Monitor transmitter
 
 #include <WiFi.h>
-#include "SoundData.h"
+#include "Force.h"
 
 //Network credentials
 const char* ssid = "In-Ear-Transmitter";
 const char* password = "123456789";
 
 //Buffer size for transmission
-int bufsize = 128;    //The smaller this is, the smaller the latency, but smaller values increase risk of data unavailability on the Rx side
+int bufsize = 64;    //The smaller this is, the smaller the latency, but smaller values increase risk of data unavailability on the Rx side
                     //So far I've found values in the range 16-256 to be most effective (powers of 2 only!)
 
 //Set server port number
@@ -39,16 +39,16 @@ void loop() {
     Serial.println("Connected.");
     client.setTimeout(20);
     while(client.connected()){
-      digitalWrite(26, HIGH);
-      for(int i = 0; i < 40923; i+=bufsize){
+      for(int i = 0; i < 87424; i+=bufsize){
         uint8_t audio[bufsize] = {0x80};
         for(int j = 0; j < bufsize; j++){
-          if(i+j >= 40923){
+          if(i+j >= 87424){
             break;
           }
           audio[j] = Force[i+j];
         }
         client.write(audio,bufsize);
+        digitalWrite(26, HIGH);
       }
       digitalWrite(26, LOW);
       delay(1000);
