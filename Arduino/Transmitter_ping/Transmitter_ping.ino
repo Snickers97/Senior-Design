@@ -16,6 +16,8 @@ WiFiServer server(80);
 
 void setup() {
   Serial.begin(115200);
+  pinMode(13, OUTPUT);
+  digitalWrite(13, HIGH);
  
   //WIFI SETUP SECTION
   //Activate WiFi network
@@ -42,22 +44,20 @@ void loop() {
   if(client){
     unsigned long time1, time2, diff;
     Serial.println("Connected.");
-    int x = 0;
+    uint8_t x[256] = {15};
+    uint8_t y = 15;
     client.setTimeout(20);
     time1 = millis();
-    client.write(x);
+    client.write(x,256);
     while(client.connected()){
-      if(client.read() == x+1){
+      if(client.read() == y){
         time2 = millis();
-        x++;
-        if(x == 255)
-          x = 0;
         diff = time2-time1;
         Serial.println(diff);
         //Serial.println(x);
         //delay(10);
         time1 = millis();
-        client.write(x);
+        client.write(x,16);
       }
     }
     //Close the connection
