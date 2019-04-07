@@ -1,15 +1,16 @@
 
 #include <WiFi.h>
-#include <driver/adc.h>   //allows use of onboard adc for testing
 #include "driver/spi_master.h"  //allow use of spi master, is master
-#include "driver/i2s.h" 
 #include "driver/adc.h" //allow use of on board adc
 
 //Network credentials
 const char* ssid = "In-Ear-Transmitter";
 const char* password = "123456789";
 
-int bufsize = 128;
+int bufsize = 1024;
+
+//LED setup
+const int sysOn = 13;
 
 //Set server port number to 80
 WiFiServer server(80);
@@ -17,6 +18,9 @@ WiFiServer server(80);
 void setup() {
   
   Serial.begin(115200);
+
+  pinMode(sysOn, OUTPUT);
+  digitalWrite(sysOn, HIGH);    //Enable power LED
  
   //WIFI SETUP SECTION
     //Activate WiFi network
@@ -40,20 +44,15 @@ void loop() {
   if(client){
     Serial.println("Connected.");
     client.setTimeout(20);
+    uint16_t val = 0;
+    uint8_t audio[bufsize];
     while(client.connected()){
-//      digitalWrite(26, HIGH);
-      uint16_t val = 0xFF00;
-      uint8_t audio;
-      audio = (val >> 8);
-      /*for(int i = 0; i < bufsize; i++){
+      for(int i = 0; i < bufsize; i++){
         val = adc1_get_raw(ADC1_CHANNEL_0); //read in from ADC
-        audio[i] = (val >> 4);
-      }*/
-//    
-     // client.write(audio,bufsize);
-      Serial.println(audio);
-//      digitalWrite(26, LOW);
-      delay(1000);
+        audio[i] = (val >> 4);    //right shift by 4, only use MS 8 bits
+        //Serial.println(audio[i]);
+      }
+      client.write(audio,bufsize);
     }
     //Close the connection
     client.stop();
