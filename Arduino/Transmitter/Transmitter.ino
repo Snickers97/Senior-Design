@@ -5,7 +5,12 @@
 
 //Sets the SPI settings for reading from the ADC
 SPISettings adcSettings(705600, MSBFIRST, SPI_MODE0);
-  //These values are rough educated guesses, will adjust once we have the hardware
+
+int bufsize = 256;
+
+//MISO = 19  (third, yellow wire)
+//SCK = 18    (second)
+//SS = 5      (first)
 
 //Network credentials
 const char* ssid = "In-Ear-Transmitter";
@@ -18,7 +23,7 @@ void setup() {
   //Activate red LED
   pinMode(13, OUTPUT);
   digitalWrite(13, HIGH);
-  Serial.begin(115200);
+  Serial.begin(230400);
  
   //WIFI SETUP SECTION
   //Activate WiFi network
@@ -32,9 +37,11 @@ void setup() {
 
   //SPI SETUP SECTION
   pinMode(SS, OUTPUT);
-  //Ensures the ADC starts disabled (high signal disables devices)
-  digitalWrite(SS, HIGH);
+  pinMode(MISO, INPUT);
+  pinMode(SCK, OUTPUT);
   SPI.begin();
+
+  
   
   
 }
@@ -44,25 +51,27 @@ void loop() {
 
   if(client){
     Serial.println("Connected.");
-    uint16_t audio;
+    client.setTimeout(20);
+    uint8_t val;
+    uint16_t audio[bufsize/2];
     while(client.connected()){
-      audio = adc_read();
-      client.write(audio);    //This likely won't be the way it actually works
+      for(int i = 0; i < bufsize; i++){
+        SPI.beginTransaction(adcSettings);
+        digitalWrite(SS,LOW);
+        val = SPI.transfer(0);    //garbage data, throw away
+        //audio[i] = SPI.transfer(0);   //upper 8 bits
+        //audio[i+1] = SPI.transfer(0); //lower 8 bits
+        audio[i] = SPI.transfer16(0);
+        Serial.println(audio[i]);
+        //Serial.print("      ");
+        //Serial.println(audio[i+1]);
+        digitalWrite(SS,HIGH);
+        SPI.endTransaction();
+      }
+      //client.write(audio,bufsize/2);
     }
     //Close the connection
     client.stop();
     Serial.println("Disconnected.");
   }
-}
-
-uint16_t adc_read(){
-  SPI.beginTransaction(adcSettings);
-  //Enable the ADC
-  digitalWrite(SS, LOW);
-  //stores the received data in variable "audio"
-  //The data sent doesn't matter, as we are reading only
-  uint16_t audio = SPI.transfer16(0);
-  //digitalWrite(SS, HIGH);
-  //SPI.endTransaction();
-  return audio;
 }

@@ -9,6 +9,8 @@
 const char* ssid = "In-Ear-Transmitter";
 const char* password = "123456789";
 
+int bufsize = 128;
+
 //Set server port number to 80
 WiFiServer server(80);
 
@@ -40,19 +42,16 @@ void loop() {
     client.setTimeout(20);
     while(client.connected()){
 //      digitalWrite(26, HIGH);
-      uint16_t val = adc1_get_raw(ADC1_CHANNEL_0); //read in from ADC
-//      for(int i = 0; i < 40923; i+=bufsize){
-//        uint8_t audio[bufsize] = {0x80};
-//        for(int j = 0; j < bufsize; j++){
-//          if(i+j >= 40923){
-//            break;
-//          }
-//          audio[j] = Force[i+j];
-//        }
-//        client.write(audio,bufsize);
-//      }
-      client.write(val);
-      Serial.println(val);
+      uint16_t val = 0xFF00;
+      uint8_t audio;
+      audio = (val >> 4);
+      /*for(int i = 0; i < bufsize; i++){
+        val = adc1_get_raw(ADC1_CHANNEL_0); //read in from ADC
+        audio[i] = (val >> 4);
+      }*/
+//    
+     // client.write(audio,bufsize);
+      Serial.println(audio);
 //      digitalWrite(26, LOW);
       delay(1000);
     }
